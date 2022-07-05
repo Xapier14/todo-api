@@ -1,15 +1,16 @@
 const express = require('express')
+const bcrypt = require('bcrypt')
 const router = express.Router();
 const Account = require('../../../models/Account');
 const requireAuth = require('../../../middlewares/requireAuth');
+const { default: mongoose } = require('mongoose');
 
 // router.get('/', (req, res) => {
 //   res.send('We are on posts');
 // });
 
-router.use('/signup', requireAuth);
+//router.use('/signup', requireAuth);
 router.post('/signup', (req, res) => {
-  console.log(req.body);
   const username = req.body.username
   const password = req.body.password
   const token = ""// req.body.token
@@ -35,16 +36,6 @@ router.post('/signup', (req, res) => {
     })
     return
   }
-
-  // check if username is taken
-  // if (database.checkUsernameTaken(username)) {
-  //   res.status(400).send({
-  //     token: token,
-  //     validity: validity,
-  //     status: 'Username is taken.'
-  //   })
-  //   return
-  // }
 
   // check if password is allowed
   // must be 8 >= and <= 64 characters
@@ -77,11 +68,54 @@ router.post('/signup', (req, res) => {
     return
   }
 
-  res.status(200).send({
-    token: token,
-    validity: validity,
-    status: 'Account created.'
-  })
+  // check if username is taken
+  mongoose.connect(process.env.DB_CONNECTION, {
+    useNewUrlParser: true
+  });
+  Account.findOne({ username: username }, (err, acc) => {
+    if (err) {
+      res.status(500).send({
+        token: token,
+        validity: validity,
+        status: 'Internal server error.'
+      })
+      return;
+    }
+    if (acc) {
+      res.status(400).send({
+        token: token,
+        validity: validity,
+        status: 'Username is taken.'
+      })
+      return;
+    }
+    // hash password
+    const salt = bcrypt.genSaltSync(10)
+    const hash = bcrypt.hashSync(password, salt)
+
+    // create account
+    const account = new Account({
+      username: username,
+      password: hash
+    })
+
+    // save account to db
+    account.save()
+      .then(data => {
+        res.status(201).send({
+          token: token,
+          validity: validity,
+          status: 'Account created.'
+        })
+      })
+      .catch(err => {
+        res.status(500).send({
+          token: token,
+          validity: validity,
+          status: 'Error creating account.'
+        })
+      });
+  });
 });
 
 module.exports = router;

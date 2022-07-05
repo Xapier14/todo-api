@@ -13,10 +13,11 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.json());
 app.use('/api/v1', v1);
+app.use('/', express.static('static'))
 
 // routes
-app.get('/', (req, res) => {
-  res.send('We are on home');
+app.get('*', (req, res) => {
+  res.status(403).send('Access denied');
 });
 
 // connect to mongodb
@@ -30,4 +31,4 @@ mongoose.connect(
 });
 
 // start listening
-app.listen(3000);
+app.listen(process.env.API_PORT);
