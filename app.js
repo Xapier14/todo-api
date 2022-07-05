@@ -15,10 +15,13 @@ app.use(express.json());
 app.use('/api/v1', v1);
 app.use('/', express.static('static'))
 
-// routes
-app.get('*', (req, res) => {
+function accessDeniedCallback(req, res) {
   res.status(403).send('Access denied');
-});
+}
+
+// routes
+app.get('*', accessDeniedCallback);
+app.post('*', accessDeniedCallback);
 
 // connect to mongodb
 mongoose.connect(
