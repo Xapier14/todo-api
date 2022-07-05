@@ -1,5 +1,5 @@
 {
-  "name": "todo-rest-api",
+  "name": "todo-api",
   "version": "1.0.0",
   "description": "A backend REST api for a sample ToDo React App",
   "main": "app.js",
