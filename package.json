@@ -1,0 +1,22 @@
+{
+  "name": "todo-rest-api",
+  "version": "1.0.0",
+  "description": "A backend REST api for a sample ToDo React App",
+  "main": "app.js",
+  "engines": {
+    "node": "16.x"
+  },
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "Xapier14",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "mongoose": "^6.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
+  }
+}
