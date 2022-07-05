@@ -33,4 +33,4 @@ const requiresAuth = (req, res, next) => {
   });
 };
 
-module.exports = requireAuth;
+module.exports = requiresAuth;
