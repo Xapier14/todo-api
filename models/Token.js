@@ -8,13 +8,13 @@ const TokenSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  validity: {
-    type: Number,
+  valid_till: {
+    type: Date,
     required: true
   },
   createdOn: {
     type: Date,
-    default: Date.now
+    default: Date.now()
   }
 });
 

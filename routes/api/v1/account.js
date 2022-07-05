@@ -2,28 +2,27 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const router = express.Router();
 const Account = require('../../../models/Account');
-const requireAuth = require('../../../middlewares/requireAuth');
+const requireAuth = require('../../../middlewares/requiresAuth');
 const { default: mongoose } = require('mongoose');
+const Token = require('../../../models/Token');
 
-// router.get('/', (req, res) => {
-//   res.send('We are on posts');
-// });
+const validDays = 3;
 
 //router.use('/signup', requireAuth);
 router.post('/signup', (req, res) => {
-  const username = req.body.username
-  const password = req.body.password
-  const token = ""// req.body.token
-  const validity = 0// database.getTokenValidity(token)
+  const username = req.body.username;
+  const password = req.body.password;
+  const token = "";// req.body.token
+  const validity = 0;// database.getTokenValidity(token)
 
   // check if username or password is not supplied
   if (username === undefined || password === undefined) {
     res.status(400).send({
       token: token,
-      validity: validity,
+      valid_till: validity,
       status: 'Invalid data.'
-    })
-    return
+    });
+    return;
   }
 
   // check if username is allowed
@@ -31,10 +30,10 @@ router.post('/signup', (req, res) => {
   if (username.length < 3 || username.length > 16) {
     res.status(400).send({
       token: token,
-      validity: validity,
+      valid_till: validity,
       status: 'Username must be 3 >= and <= 16 characters.'
-    })
-    return
+    });
+    return;
   }
 
   // check if password is allowed
@@ -42,10 +41,10 @@ router.post('/signup', (req, res) => {
   if (password.length < 8 || password.length > 64) {
     res.status(400).send({
       token: token,
-      validity: validity,
+      valid_till: validity,
       status: 'Password must be 8 >= and <= 64 characters.'
-    })
-    return
+    });
+    return;
   }
 
   // check if passsword is strong
@@ -54,18 +53,18 @@ router.post('/signup', (req, res) => {
   // must contain at least one number
   // must contain at least one special character
   // must contain at least one of each
-  const uppercase = /[A-Z]/
-  const lowercase = /[a-z]/
-  const number = /[0-9]/
-  const special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/
+  const uppercase = /[A-Z]/;
+  const lowercase = /[a-z]/;
+  const number = /[0-9]/;
+  const special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
   const strong = uppercase.test(password) && lowercase.test(password) && number.test(password) && special.test(password)
   if (!strong) {
     res.status(400).send({
       token: token,
-      validity: validity,
+      valid_till: validity,
       status: 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character.'
-    })
-    return
+    });
+    return;
   }
 
   // check if username is taken
@@ -115,6 +114,82 @@ router.post('/signup', (req, res) => {
           status: 'Error creating account.'
         })
       });
+  });
+});
+
+//router.use('/login', requireAuth);
+router.post('/login', (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const token = "";// req.body.token
+  const validity = 0;// database.getTokenValidity(token)
+
+  const uppercase = /[A-Z]/;
+  const lowercase = /[a-z]/;
+  const number = /[0-9]/;
+  const special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+  // check if data is invalid
+  if (username === undefined
+    || password === undefined
+    || username.length < 3 || username.length > 16
+    || password.length < 8 || password.length > 64
+    || !(uppercase.test(password) && lowercase.test(password) && number.test(password) && special.test(password))) {
+    res.status(400).send({
+      token: token,
+      valid_till: validity,
+      status: 'Invalid data.'
+    });
+    return;
+  }
+
+  Account.findOne({username: username}, (err, acc) => {
+    if (err) {
+      res.status(500).send({
+        token: token,
+        valid_till: validity,
+        status: 'Internal server error.'
+      })
+      return;
+    }
+    if (acc) {
+      if (bcrypt.compareSync(password, acc.password)){
+        // generate token
+        newToken = bcrypt.genSaltSync(32);
+        newValidity = new Date(Date.now());
+        newValidity.setDate(newValidity.getDate() + validDays);
+        const token = new Token({
+          username: username,
+          token: newToken,
+          valid_till: newValidity
+        })
+        token.save()
+        .then(data => {
+          // send success response
+          res.status(200).send({
+            token: newToken,
+            valid_till: newValidity,
+            status: 'Login successful.'
+          });
+          return;
+        })
+        .catch(err => {
+          res.status(500).send({
+            token: token,
+            valid_till: validity,
+            status: 'Internal server error.'
+          });
+          return;
+        });
+      } else {
+        res.status(400).send({
+          token: token,
+          valid_till: validity,
+          status: 'Invalid credentials.'
+        });
+        return;
+      }
+    }
   });
 });
 
