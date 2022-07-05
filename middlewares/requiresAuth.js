@@ -1,6 +1,6 @@
 const Token = require("../models/Token");
 
-const requireAuth = (req, res, next) => {
+const requiresAuth = (req, res, next) => {
   const token = req.get('Auth-Token');
   if (token === undefined) {
     res.status(401).send({

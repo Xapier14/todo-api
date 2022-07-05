@@ -1,9 +1,9 @@
 const express = require('express');
-const requireAuth = require('../../../middlewares/requiresAuth');
+const requiresAuth = require('../../../middlewares/requiresAuth');
 
 const router = express.Router();
 
-router.use('/', requireAuth);
+router.use('/', requiresAuth);
 router.get('/', (req, res) => {
   res.send('We are on posts');
 });
