@@ -2,9 +2,6 @@ var requests = [];
 const MAX_REQUESTS = 1000;
 const TIME_PERIOD = 1000 * 60;
 
-function isSessionInRequests(identifier) {
-}
-
 function addOrIncrement(identifier, isIp) {
   let req;
   let found = false;
