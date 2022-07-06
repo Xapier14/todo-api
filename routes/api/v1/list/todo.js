@@ -11,6 +11,8 @@ router.get('/:id', (req, res) => {
 router.patch('/:id', (req, res) => {
   res.send(req.params.id)
 });
+router.delete('/:id', (req, res) => {
+});
 router.post('/', (req, res) => {
   const token = req.get('Auth-Token');
   const title = req.body.title;
