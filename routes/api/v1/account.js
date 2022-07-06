@@ -1,10 +1,10 @@
 const express = require('express')
 const bcrypt = require('bcrypt')
 const router = express.Router();
-const Account = require('../../../models/Account');
+const Account = require('../../../models/account');
 const requireAuth = require('../../../middlewares/requiresAuth');
 const { default: mongoose } = require('mongoose');
-const Token = require('../../../models/Token');
+const Token = require('../../../models/token');
 
 const validDays = 3;
 

@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.use('/', requiresAuth);
 router.get('/', (req, res) => {
-  res.send('We are on posts');
+  res.send('We are on list');
 });
 
 module.exports = router;

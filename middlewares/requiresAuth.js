@@ -1,4 +1,4 @@
-const Token = require("../models/Token");
+const Token = require("../models/token");
 
 const requiresAuth = (req, res, next) => {
   const token = req.get('Auth-Token');
