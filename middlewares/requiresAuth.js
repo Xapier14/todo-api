@@ -15,21 +15,19 @@ const requiresAuth = (req, res, next) => {
       });
       return;
     }
-    if (tok) {
-      if (tok.valid_till < Date.now()) {
-        res.status(401).send({
-          status: 'Token expired.'
-        });
-        return;
-      } else {
-        next();
-      }
-    } else {
+    if (!tok) {
       res.status(401).send({
         status: 'Unauthorized.'
       });
       return;
     }
+    if (tok.valid_till < Date.now()) {
+      res.status(401).send({
+        status: 'Token expired.'
+      });
+      return;
+    }
+    next();
   });
 };
 
