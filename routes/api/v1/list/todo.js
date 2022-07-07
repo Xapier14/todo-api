@@ -54,6 +54,49 @@ router.patch('/:id', (req, res) => {
   res.send(req.params.id)
 });
 router.delete('/:id', (req, res) => {
+  const token = req.get('Auth-Token');
+  const id = req.params.id;
+  Token.findOne({ token: token }, (err, tok) => {
+    if (err || !tok) {
+      res.status(500).send({
+        status: 'Internal server error.'
+      });
+      return;
+    }
+    Todo.findOne({ id: id, username: tok.username }, (err, todo) => {
+      if (err) {
+        res.status(500).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Internal server error.'
+        });
+        return;
+      }
+      if (!todo) {
+        res.status(404).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Todo entry not found.'
+        });
+        return;
+      }
+      todo.remove((err) => {
+        if (err) {
+          res.status(500).send({
+            token: token,
+            valid_till: tok.valid_till,
+            status: 'Internal server error.'
+          });
+          return;
+        }
+        res.status(200).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Success.'
+        });
+      });
+    });
+  });
 });
 router.post('/', (req, res) => {
   const token = req.get('Auth-Token');
