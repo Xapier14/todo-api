@@ -51,7 +51,64 @@ router.get('/:id', (req, res) => {
   });
 });
 router.patch('/:id', (req, res) => {
-  res.send(req.params.id)
+  const token = req.get('Auth-Token');
+  const id = req.params.id;
+  const body = req.body;
+  Token.findOne({ token: token }, (err, tok) => {
+    if (err || !tok) {
+      res.status(500).send({
+        status: 'Internal server error.'
+      });
+      return;
+    }
+    Todo.findOne({ id: id, username: tok.username }, (err, todo) => {
+      if (err) {
+        res.status(500).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Internal server error.'
+        });
+        return;
+      }
+      if (!todo) {
+        res.status(404).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Todo entry not found.'
+        });
+        return;
+      }
+      if (body.title) {
+        todo.title = body.title;
+      }
+      if (body.content) {
+        todo.content = body.content;
+      }
+      if (body.contentType) {
+        todo.contentType = body.contentType;
+      }
+      if (body.isCompleted) {
+        todo.isCompleted = body.isCompleted;
+      }
+      todo.lastModified = new Date();
+      todo.save((err, todo) => {
+        if (err) {
+          res.status(500).send({
+            token: token,
+            valid_till: tok.valid_till,
+            status: 'Internal server error.'
+          });
+          return;
+        }
+        res.status(200).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Success.'
+        });
+        return;
+      });
+    });
+  });
 });
 router.delete('/:id', (req, res) => {
   const token = req.get('Auth-Token');
