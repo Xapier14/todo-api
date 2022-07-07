@@ -1,12 +1,54 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const requiresAuth = require('../../../../middlewares/requiresAuth');
 const Token = require('../../../../models/token');
 const Todo = require('../../../../models/todo');
 
 const router = express.Router();
 router.get('/:id', (req, res) => {
-  res.send(req.params.id)
+  const token = req.get('Auth-Token');
+  const id = req.params.id;
+  Token.findOne({ token: token }, (err, tok) => {
+    if (err || !tok) {
+      res.status(500).send({
+        status: 'Internal server error.'
+      });
+      return;
+    }
+    Todo.findOne({ id: id, username: tok.username }, (err, todo) => {
+      if (err) {
+        res.status(500).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Internal server error.'
+        });
+        return;
+      }
+      if (!todo) {
+        res.status(404).send({
+          token: token,
+          valid_till: tok.valid_till,
+          status: 'Todo entry not found.'
+        });
+        return;
+      }
+      res.status(200).send({
+        token: token,
+        valid_till: tok.valid_till,
+        status: 'Found.',
+        todo: {
+          id: todo.id,
+          username: todo.username,
+          title: todo.title,
+          content: todo.content,
+          contentType: todo.contentType,
+          isCompleted: todo.isCompleted,
+          createdOn: todo.createdOn,
+          lastModified: todo.lastModified
+        }
+      });
+      return;
+    });
+  });
 });
 router.patch('/:id', (req, res) => {
   res.send(req.params.id)
