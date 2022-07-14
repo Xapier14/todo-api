@@ -20,7 +20,6 @@ function accessDeniedCallback(req, res) {
 }
 
 // routes
-app.get('*', accessDeniedCallback);
 app.post('*', accessDeniedCallback);
 
 // connect to mongodb
